@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">CurrencyConverter</string>
+    <string-array name="currencyList">
+        <item>USD - Dollar des Etats Unis</item>
+        <item>EUR - Euro</item>
+        <item>GBP - Livre britanique</item>
+    </string-array>
+</resources>
