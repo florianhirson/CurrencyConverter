@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText saisie;
     private TextView result;
     private String currencyFrom, currencyTo;
+    private Float value;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +68,15 @@ public class MainActivity extends AppCompatActivity {
         swap.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 swap(from, to);
+                currencyFrom = from.getSelectedItem().toString().substring(0, 3);
+                currencyTo = to.getSelectedItem().toString().substring(0, 3);
+                if(!currencyFrom.equals("") && !currencyTo.equals("")) {
+                    if (!isConnected()) {
+                        Toast.makeText(getApplicationContext(), "Aucune connexion à internet.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    new FetchTask().execute("http://download.finance.yahoo.com/d/quotes.csv?s=" + currencyFrom + currencyTo + "=X&f=l1&e=.csv");
+                }
             }
         });
 
@@ -83,29 +93,30 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-
-                currencyFrom = from.getSelectedItem().toString().substring(0, 3);
-                currencyTo = to.getSelectedItem().toString().substring(0, 3);
-
-                if (!isConnected()) {
-                    Toast.makeText(getApplicationContext(), "Aucune connexion à internet.", Toast.LENGTH_SHORT).show();
-                    return;
+                value = Float.parseFloat(saisie.getText().toString());
+                if(currencyFrom != null && currencyTo != null) {
+                    if (!isConnected()) {
+                        Toast.makeText(getApplicationContext(), "Aucune connexion à internet.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    new FetchTask().execute("http://download.finance.yahoo.com/d/quotes.csv?s=" + currencyFrom + currencyTo
+                            + "=X&f=l1&e=.csv");
                 }
-                new FetchTask().execute("http://quote.yahoo.com/d/quotes.csv?s=" + currencyFrom + currencyTo + "=X&f=l1&e=.csv");
-                /*
-                try {
-                    result.setText(convert(Integer.parseInt(saisie.getText().toString()),getTaux(currencyFrom,currencyTo),currencyFrom,currencyTo));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                */
             }
         });
 
         from.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                currencyFrom = parent.getItemAtPosition(position).toString();
+                currencyFrom = parent.getItemAtPosition(position).toString().substring(0, 3);
+                if(currencyFrom != null && currencyTo != null) {
+                    if (!isConnected()) {
+                        Toast.makeText(getApplicationContext(), "Aucune connexion à internet.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    new FetchTask().execute("http://download.finance.yahoo.com/d/quotes.csv?s=" + currencyFrom + currencyTo
+                            + "=X&f=l1&e=.csv");
+                }
             }
 
             @Override
@@ -117,7 +128,15 @@ public class MainActivity extends AppCompatActivity {
         to.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                currencyTo = parent.getItemAtPosition(position).toString();
+                currencyTo = parent.getItemAtPosition(position).toString().substring(0, 3);
+                if(currencyFrom != null && currencyTo != null) {
+                    if (!isConnected()) {
+                        Toast.makeText(getApplicationContext(), "Aucune connexion à internet.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    new FetchTask().execute("http://download.finance.yahoo.com/d/quotes.csv?s=" + currencyFrom + currencyTo
+                            + "=X&f=l1&e=.csv");
+                }
             }
 
             @Override
@@ -143,8 +162,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public String convert (Integer montant, float taux, String currencyFrom, String currencyTo) {
-        return montant +" "+ currencyFrom+ " = " + montant*taux+ " " + currencyTo;
+    public String convert (Float montant, Float taux, String currencyFrom, String currencyTo) {
+        if (montant != null && currencyFrom != null && currencyTo != null)
+            return montant +" "+ currencyFrom+ " = " + montant*taux+ " " + currencyTo;
+        return null;
     }
 
     private class FetchTask extends AsyncTask<String, Void, String> {
@@ -205,7 +226,8 @@ public class MainActivity extends AppCompatActivity {
             if (s == null) {
                 Toast.makeText(getApplicationContext(), "Aucune connexion à internet.", Toast.LENGTH_SHORT).show();
             } else {
-                result.setText(convert(Integer.parseInt(saisie.getText().toString()),Float.parseFloat(s),currencyFrom,currencyTo));
+                if(saisie.getText().toString() != null)
+                    result.setText(convert(value,Float.parseFloat(s),currencyFrom,currencyTo));
             }
 
         }
